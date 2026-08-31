@@ -34,3 +34,10 @@ brew uninstall --cask --zap kitobot
 - The cask's `version`/`sha256` need bumping by hand on every new
   [KitoBot release](https://github.com/Remownz/KitoBot-releases/releases) —
   no automation for that yet.
+- KitoBot also has its own in-app updater (Tauri's, independent of this
+  tap) that can self-update ahead of this tap's pinned version. A
+  `preflight` block asks the app itself (`GET /api/version` on
+  `127.0.0.1:8787`, falling back to the `version.json` it writes on every
+  startup if the app isn't running) and aborts the install instead of
+  downgrading a self-updated app back to whatever this tap still has
+  pinned.
