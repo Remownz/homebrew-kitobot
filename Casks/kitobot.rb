@@ -38,7 +38,12 @@ cask "kitobot" do
       installed_version = nil
     end
 
-    if installed_version.nil?
+    # version.json outlives an uninstall (app data is kept on purpose — see
+    # the tap README's zap trash list) — only trust it while the app it
+    # describes is actually still sitting at the target install path.
+    # Otherwise a plain fresh install after "delete the app, keep the data"
+    # would see a stale file and wrongly think a newer copy is installed.
+    if installed_version.nil? && File.exist?("/Applications/KitoBot.app")
       version_file = Pathname.new("~/Library/Application Support/com.kitobot.desktop/version.json").expand_path
       if version_file.exist?
         begin
