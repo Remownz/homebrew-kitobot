@@ -6,6 +6,7 @@ Homebrew tap for [KitoBot](https://github.com/Remownz/KitoBot).
 
 ```bash
 brew tap Remownz/kitobot
+brew trust remownz/kitobot   # newer Homebrew versions require trusting a fresh third-party tap once
 brew install --cask kitobot
 ```
 
