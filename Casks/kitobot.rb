@@ -1,3 +1,6 @@
+require "json"
+require "open3"
+
 cask "kitobot" do
   version "0.1.3"
   sha256 "097f6228098347c077d9665145c6c9dfec3581e86675c1991af9bcdbacd91740"
@@ -15,6 +18,44 @@ cask "kitobot" do
   depends_on :macos
 
   app "KitoBot.app"
+
+  # KitoBot has its own in-app updater (Tauri's, checking KitoBot-releases'
+  # latest.json independently of this tap) that self-replaces the running
+  # .app in place. If that already ran, this cask's own version/sha256 —
+  # bumped by hand, see the tap's README — can be stale, and blindly
+  # installing would downgrade a newer self-update. Ask the actually
+  # running app first (GET /api/version), falling back to the version.json
+  # it writes on every startup if nothing is listening (app not running).
+  preflight do
+    installed_version = nil
+
+    begin
+      stdout, _stderr, status = Open3.capture3(
+        "/usr/bin/curl", "-s", "--max-time", "1", "http://127.0.0.1:8787/api/version"
+      )
+      installed_version = JSON.parse(stdout)["version"] if status.success? && !stdout.strip.empty?
+    rescue
+      installed_version = nil
+    end
+
+    if installed_version.nil?
+      version_file = Pathname.new("~/Library/Application Support/com.kitobot.desktop/version.json").expand_path
+      if version_file.exist?
+        begin
+          installed_version = JSON.parse(version_file.read)["version"]
+        rescue
+          installed_version = nil
+        end
+      end
+    end
+
+    if installed_version && Version.new(installed_version) >= version
+      raise CaskError,
+            "KitoBot #{installed_version} is already installed — that's newer than or equal to this cask's " \
+            "#{version}, most likely from the in-app auto-updater running ahead of this tap. Skipping to avoid " \
+            "downgrading; bump this cask's version/sha256 to #{installed_version} or later first."
+    end
+  end
 
   # Unsigned/un-notarized build (no Apple Developer Program membership) —
   # Homebrew's own curl-based download doesn't set com.apple.quarantine the
