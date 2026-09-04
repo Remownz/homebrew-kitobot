@@ -2,8 +2,8 @@ require "json"
 require "open3"
 
 cask "kitobot" do
-  version "0.1.4"
-  sha256 "7a3af5f163f7c92a89ce7175002cae46c24ad54a74d3a3bb2c6e1137c0fd9265"
+  version "0.1.11"
+  sha256 "cf16a355374280cff0e0f6157e1c5875248db70b129e3e0bbe3ca8a314c2a8cb"
 
   url "https://github.com/Remownz/KitoBot-releases/releases/download/v#{version}/KitoBot_#{version}_aarch64.dmg"
   name "KitoBot"
